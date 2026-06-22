@@ -1,0 +1,630 @@
+<!-- نموذج استلام مركبة - مركز صيانة سيارات الألمانية -->
+<style>
+  :root {
+    --ink: #1a1c1f;
+    --paper: #ffffff;
+    --line: #d9d4c8;
+    --line-strong: #8a8275;
+    --accent: #b91c1c;       /* الأحمر الألماني */
+    --accent-deep: #7f1313;
+    --gold: #c5a253;
+    --steel: #2b3038;
+    --muted: #6b7280;
+    --field-bg: #faf9f6;
+    --ok: #15803d;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+    --r: 10px;
+    font-family: 'Cairo', 'Tajawal', system-ui, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  #app {
+    background: #e7e4dc;
+    min-height: 100vh;
+    color: var(--ink);
+    direction: rtl;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 18px 14px 80px; }
+
+  /* ===== Top nav ===== */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap;
+    background: var(--steel);
+    color:#fff; padding:12px 16px; border-radius: var(--r);
+    box-shadow: var(--shadow); margin-bottom:16px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand .mark {
+    width:42px;height:42px;border-radius:9px;
+    background: linear-gradient(135deg,var(--accent),var(--accent-deep));
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.15);
+  }
+  .brand b { font-size:15px; letter-spacing:.2px; display:block; }
+  .brand span { font-size:11px; color:#c3c8d0; }
+  .navbtns { display:flex; gap:8px; }
+  .navbtns button {
+    background: rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.14);
+    padding:8px 14px; border-radius:8px; cursor:pointer; font-family:inherit;
+    font-size:13px; font-weight:600; transition:.15s;
+  }
+  .navbtns button:hover { background: rgba(255,255,255,.18); }
+  .navbtns button.active { background: var(--accent); border-color: var(--accent); }
+
+  /* ===== Card / form ===== */
+  .sheet {
+    background: var(--paper); border-radius: var(--r);
+    box-shadow: var(--shadow); overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .sheet-head {
+    background: #fff;
+    border-bottom: 3px solid var(--accent);
+    padding: 18px 22px 14px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+  }
+  .sheet-head .title-ar { font-size:22px; font-weight:800; color:var(--ink); }
+  .sheet-head .title-en { font-size:12px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+  .sheet-head .center { text-align:left; direction:ltr; }
+  .sheet-head .center b { display:block; font-size:14px; color:var(--accent-deep); }
+  .sheet-head .center small { color:var(--muted); font-size:11px; }
+  .meta-row {
+    display:flex; gap:10px; flex-wrap:wrap;
+    padding:10px 22px; background:var(--field-bg); border-bottom:1px solid var(--line);
+    font-size:12px; color:var(--muted);
+  }
+  .meta-row .pill { background:#fff; border:1px solid var(--line); padding:5px 10px; border-radius:20px; }
+  .meta-row .pill b { color:var(--ink); }
+
+  .body { padding: 18px 22px 8px; }
+  .section-title {
+    font-size:13px; font-weight:800; color:var(--accent-deep);
+    margin: 18px 0 10px; padding-bottom:6px; border-bottom:1px dashed var(--line);
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title .en { font-weight:500; color:var(--muted); font-size:11px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+  @media (max-width:560px){ .grid{ grid-template-columns:1fr; } }
+  .field label { display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:#444; }
+  .field label .en { color:var(--muted); font-weight:400; font-size:10.5px; }
+  .field input, .field select, .field textarea {
+    width:100%; padding:10px 12px; border:1px solid var(--line-strong);
+    border-radius:8px; font-family:inherit; font-size:14px; background:var(--field-bg);
+    transition:.15s; color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline:none; border-color:var(--accent); background:#fff;
+    box-shadow:0 0 0 3px rgba(185,28,28,.10);
+  }
+  .field textarea { resize:vertical; min-height:64px; }
+  .field.full { grid-column: 1 / -1; }
+
+  /* fuel slider */
+  .fuel-wrap { display:flex; align-items:center; gap:12px; }
+  .fuel-wrap input[type=range]{ flex:1; accent-color:var(--accent); }
+  .fuel-val { font-weight:800; min-width:46px; text-align:center; color:var(--accent-deep); }
+
+  /* visual inspection chips */
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip {
+    border:1px solid var(--line-strong); background:#fff; padding:7px 12px;
+    border-radius:20px; cursor:pointer; font-size:12.5px; user-select:none; transition:.12s;
+  }
+  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  /* acknowledgement */
+  .ack {
+    background:var(--field-bg); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; font-size:12px; line-height:1.85; color:#3a3a3a; margin-top:6px;
+  }
+  .ack .en { color:var(--muted); font-size:11px; display:block; margin-top:8px; direction:ltr; text-align:left; }
+  .agree { display:flex; align-items:flex-start; gap:10px; margin-top:12px; }
+  .agree input { width:18px;height:18px;margin-top:2px; accent-color:var(--accent); }
+  .agree label { font-size:13px; font-weight:600; }
+
+  /* signature */
+  .sig-box { border:1px dashed var(--line-strong); border-radius:8px; background:#fff; }
+  .sig-box canvas { width:100%; height:130px; display:block; border-radius:8px; touch-action:none; }
+  .sig-actions { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-top:1px solid var(--line); }
+  .sig-actions small { color:var(--muted); font-size:11px; }
+  .sig-actions button { background:none;border:none;color:var(--accent);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600; }
+
+  /* footer actions */
+  .actions {
+    position:sticky; bottom:0; margin-top:20px;
+    background:linear-gradient(180deg,rgba(255,255,255,0),#fff 30%);
+    padding:16px 22px; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    border-top:1px solid var(--line);
+  }
+  .btn {
+    padding:12px 22px; border-radius:9px; border:none; cursor:pointer;
+    font-family:inherit; font-weight:700; font-size:14px; transition:.15s;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:var(--accent-deep); }
+  .btn-wa { background:#25D366; color:#fff; }
+  .btn-wa:hover { background:#1da851; }
+  .btn-ghost { background:#fff; color:var(--ink); border:1px solid var(--line-strong); }
+  .btn-ghost:hover { background:var(--field-bg); }
+
+  /* ===== Admin ===== */
+  .admin-head { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px; }
+  .admin-head h2 { margin:0;font-size:18px; }
+  .search { display:flex;gap:8px;flex-wrap:wrap; }
+  .search input { padding:9px 12px;border:1px solid var(--line-strong);border-radius:8px;font-family:inherit;font-size:13px;min-width:200px; }
+  .stat-row { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px; }
+  .stat { background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;flex:1;min-width:130px;box-shadow:var(--shadow); }
+  .stat b { font-size:22px;color:var(--accent-deep);display:block; }
+  .stat span { font-size:12px;color:var(--muted); }
+  .rec {
+    background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    margin-bottom:10px;box-shadow:var(--shadow);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .rec .info b { font-size:15px; }
+  .rec .info small { display:block;color:var(--muted);font-size:12px;margin-top:3px; }
+  .rec .tag { background:var(--field-bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;color:#444;margin-inline-start:6px; }
+  .rec .ops { display:flex;gap:6px; }
+  .rec .ops button { border:1px solid var(--line-strong);background:#fff;border-radius:7px;padding:7px 12px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600; }
+  .rec .ops button:hover { background:var(--field-bg); }
+  .rec .ops button.del { color:var(--accent);border-color:#e9c5c5; }
+  .empty { text-align:center;color:var(--muted);padding:50px 20px;font-size:14px; }
+
+  /* QR panel */
+  .qr-card { background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;text-align:center;box-shadow:var(--shadow);margin-bottom:14px; }
+  .qr-card img { width:170px;height:170px;border:6px solid #fff;border-radius:8px;box-shadow:0 0 0 1px var(--line); }
+  .qr-card p { color:var(--muted);font-size:12.5px;margin:10px 0 0; }
+
+  .toast {
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--steel);color:#fff;padding:12px 22px;border-radius:30px;
+    font-size:13.5px;font-weight:600;box-shadow:var(--shadow);z-index:50;
+    opacity:0;pointer-events:none;transition:.25s;
+  }
+  .toast.show { opacity:1;bottom:34px; }
+  .hidden { display:none !important; }
+
+  /* print */
+  @media print {
+    #app { background:#fff; }
+    .topbar,.actions,.navbtns,.sig-actions button,.no-print { display:none !important; }
+    .wrap { padding:0; max-width:100%; }
+    .sheet { box-shadow:none;border:1px solid #999; }
+    .field input,.field textarea,.field select { background:#fff;border-color:#bbb; }
+  }
+</style>
+
+<div id="app">
+  <div class="wrap">
+    <div class="topbar no-print">
+      <div class="brand">
+        <div class="mark">DE</div>
+        <div>
+          <b>مركز صيانة سيارات الألمانية</b>
+          <span>German Auto Service Center</span>
+        </div>
+      </div>
+      <div class="navbtns">
+        <button id="navForm" class="active" onclick="showView('form')">نموذج العميل</button>
+        <button id="navAdmin" onclick="showView('admin')">لوحة الإدارة</button>
+      </div>
+    </div>
+
+    <!-- ============ FORM VIEW ============ -->
+    <div id="view-form">
+      <div class="sheet">
+        <div class="sheet-head">
+          <div>
+            <div class="title-ar">نموذج استلام مركبة</div>
+            <div class="title-en">Vehicle Receipt Form</div>
+          </div>
+          <div class="center">
+            <b id="serialDisp">VR-——</b>
+            <small id="dateDisp"></small>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span class="pill">الرقم الضريبي <b>—</b></span>
+          <span class="pill">السجل التجاري <b>—</b></span>
+        </div>
+
+        <div class="body">
+          <!-- بيانات العميل -->
+          <div class="section-title">بيانات العميل <span class="en">Customer Details</span></div>
+          <div class="grid">
+            <div class="field">
+              <label>إسم العميل <span class="en">Customer name</span></label>
+              <input id="custName" type="text" placeholder="الاسم بالكامل">
+            </div>
+            <div class="field">
+              <label>رقم الهاتف <span class="en">Phone no.</span></label>
+              <input id="custPhone" type="tel" inputmode="tel" placeholder="01XXXXXXXXX">
+            </div>
+            <div class="field full">
+              <label>العنوان <span class="en">Address</span></label>
+              <input id="custAddr" type="text" placeholder="العنوان">
+            </div>
+          </div>
+
+          <!-- بيانات المركبة -->
+          <div class="section-title">بيانات المركبة <span class="en">Vehicle Details</span></div>
+          <div class="grid">
+            <div class="field">
+              <label>نوع المركبة <span class="en">Vehicle Type</span></label>
+              <input id="vType" type="text" placeholder="مثال: مرسيدس C200">
+            </div>
+            <div class="field">
+              <label>موديل / سنة <span class="en">Model / Year</span></label>
+              <input id="vModel" type="text" placeholder="2020">
+            </div>
+            <div class="field">
+              <label>رقم اللوحة <span class="en">License Plate</span></label>
+              <input id="vPlate" type="text" placeholder="أ ب ج 1234">
+            </div>
+            <div class="field">
+              <label>رقم الهيكل (VIN) <span class="en">VIN</span></label>
+              <input id="vVin" type="text" placeholder="17 خانة">
+            </div>
+            <div class="field">
+              <label>عداد الكيلومترات <span class="en">Odometer</span></label>
+              <input id="vOdo" type="number" inputmode="numeric" placeholder="km">
+            </div>
+            <div class="field">
+              <label>مستوى الوقود <span class="en">Fuel Level</span></label>
+              <div class="fuel-wrap">
+                <input id="vFuel" type="range" min="0" max="100" step="5" value="50" oninput="document.getElementById('fuelVal').textContent=this.value+'%'">
+                <span class="fuel-val" id="fuelVal">50%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- شكوى -->
+          <div class="section-title">ملاحظات / شكوى العميل <span class="en">Customer Complaints / Notes</span></div>
+          <div class="field full">
+            <textarea id="complaint" placeholder="اكتب وصف العطل أو الشكوى..."></textarea>
+          </div>
+
+          <!-- الفحص البصري -->
+          <div class="section-title">الفحص البصري لجسم المركبة <span class="en">Visual Body Inspection</span></div>
+          <p class="no-print" style="font-size:12px;color:var(--muted);margin:-2px 0 8px;">اختر الملاحظات المنطبقة على حالة المركبة:</p>
+          <div class="chips" id="chips"></div>
+          <div class="field full" style="margin-top:10px;">
+            <label>ملاحظات إضافية للفحص <span class="en">Body Inspection Notes</span></label>
+            <textarea id="bodyNotes" placeholder="خدوش / صدمات / حالة الإطارات..."></textarea>
+          </div>
+
+          <!-- الإقرار -->
+          <div class="section-title">إقرار وإخلاء مسئولية <span class="en">Acknowledgement</span></div>
+          <div class="ack">
+            أُقر أنا مالك المركبة بأنني قد عاينت الحالة الفنية والجمالية للمركبة قبل الاستلام. يُخلي المركز مسؤوليته عن الممتلكات الشخصية والأعطال السابقة، ويضمن سلامة المركبة من أي إهمال مباشر أثناء تواجدها لديه. التوقيع أدناه يشمل تفويض المركز بتجربة المركبة فنياً.
+            <span class="en">I, the owner of the vehicle, acknowledge that I have inspected and accepted the vehicle's cosmetic and mechanical condition prior to collection. The service center shall not be held responsible for any personal belongings or pre-existing faults, and is responsible for exercising reasonable care. By signing below, I authorize the center to conduct technical road tests for diagnostic purposes.</span>
+          </div>
+          <div class="agree">
+            <input id="agree" type="checkbox">
+            <label for="agree">أوافق على الإقرار أعلاه</label>
+          </div>
+
+          <!-- توقيع العميل -->
+          <div class="section-title">توقيع العميل <span class="en">Customer Signature</span></div>
+          <div class="sig-box">
+            <canvas id="sigPad"></canvas>
+            <div class="sig-actions no-print">
+              <small>وقّع بإصبعك أو الماوس داخل المربع</small>
+              <button type="button" onclick="clearSig()">مسح التوقيع</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions no-print">
+          <button class="btn btn-ghost" onclick="window.print()">🖨️ طباعة</button>
+          <button class="btn btn-wa" onclick="sendWhats()">📱 مشاركة واتساب</button>
+          <button class="btn btn-primary" onclick="saveForm()">✓ حفظ النموذج</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ADMIN VIEW ============ -->
+    <div id="view-admin" class="hidden">
+      <div class="qr-card no-print">
+        <img id="qrImg" alt="QR">
+        <p>اطبع هذا الكود وضعه في الاستقبال — العميل يمسحه ليفتح النموذج على هاتفه.</p>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><b id="stTotal">0</b><span>إجمالي النماذج</span></div>
+        <div class="stat"><b id="stToday">0</b><span>نماذج اليوم</span></div>
+        <div class="stat"><b id="stSigned">0</b><span>موقّعة</span></div>
+      </div>
+
+      <div class="admin-head">
+        <h2>سجل النماذج</h2>
+        <div class="search">
+          <input id="searchBox" placeholder="بحث بالاسم / اللوحة / الهاتف..." oninput="renderAdmin()">
+        </div>
+      </div>
+      <div id="recList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== الإعدادات ===================== */
+const CONFIG = {
+  whatsappNumber: "966500916322",     // رقم المركز (السعودية) — بصيغة دولية بدون 00 أو +
+  formUrl: window.location.href        // الرابط اللي يفتحه الـ QR
+};
+const STORE_KEY = "german_auto_receipts";
+
+const CHIP_OPTIONS = [
+  "خدش بسيط أمامي","خدش بسيط خلفي","خدش جانبي أيمن","خدش جانبي أيسر",
+  "صدمة أمامية","صدمة خلفية","كسر بالزجاج","إطارات تحتاج فحص",
+  "خدوش بالجنوط","حالة الدهان جيدة","لا توجد ملاحظات"
+];
+
+/* ===================== الحالة ===================== */
+let records = [];
+let selectedChips = new Set();
+
+/* ===================== تخزين ===================== */
+async function loadRecords(){
+  try {
+    const r = await window.storage.get("all_records", true);
+    records = r ? JSON.parse(r.value) : [];
+  } catch(e){ records = []; }
+}
+async function persist(){
+  try { await window.storage.set("all_records", JSON.stringify(records), true); }
+  catch(e){ toast("تعذر الحفظ — تحقق من الاتصال"); }
+}
+
+/* ===================== أدوات ===================== */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function genSerial(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `VR-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+function nowStamp(){ return new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'}); }
+
+/* ===================== توقيع ===================== */
+let canvas, ctx, drawing=false, hasSig=false;
+function initSig(){
+  canvas = document.getElementById('sigPad');
+  const ratio = window.devicePixelRatio||1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*ratio; canvas.height = 130*ratio;
+  ctx = canvas.getContext('2d'); ctx.scale(ratio,ratio);
+  ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.strokeStyle='#1a1c1f';
+  const pos = e => {
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return {x:t.clientX-r.left, y:t.clientY-r.top};
+  };
+  const start=e=>{drawing=true;hasSig=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();};
+  const move=e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault();};
+  const end=()=>drawing=false;
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',move,{passive:false});
+  canvas.addEventListener('touchend',end);
+}
+function clearSig(){ if(ctx){ctx.clearRect(0,0,canvas.width,canvas.height);hasSig=false;} }
+
+/* ===================== chips ===================== */
+function initChips(){
+  const box = document.getElementById('chips');
+  box.innerHTML='';
+  CHIP_OPTIONS.forEach(opt=>{
+    const c=document.createElement('div');
+    c.className='chip'; c.textContent=opt;
+    c.onclick=()=>{ c.classList.toggle('on');
+      c.classList.contains('on')?selectedChips.add(opt):selectedChips.delete(opt); };
+    box.appendChild(c);
+  });
+}
+
+/* ===================== جمع البيانات ===================== */
+function collect(){
+  return {
+    serial: document.getElementById('serialDisp').textContent,
+    date: nowStamp(),
+    ts: Date.now(),
+    custName: val('custName'), custPhone: val('custPhone'), custAddr: val('custAddr'),
+    vType: val('vType'), vModel: val('vModel'), vPlate: val('vPlate'),
+    vVin: val('vVin'), vOdo: val('vOdo'), vFuel: document.getElementById('vFuel').value+'%',
+    complaint: val('complaint'),
+    bodyChips: [...selectedChips],
+    bodyNotes: val('bodyNotes'),
+    agreed: document.getElementById('agree').checked,
+    signed: hasSig,
+    signature: hasSig ? canvas.toDataURL('image/png') : null
+  };
+}
+const val = id => document.getElementById(id).value.trim();
+
+function validate(d){
+  if(!d.custName){ toast('من فضلك أدخل اسم العميل'); return false; }
+  if(!d.custPhone){ toast('من فضلك أدخل رقم الهاتف'); return false; }
+  if(!d.vPlate){ toast('من فضلك أدخل رقم اللوحة'); return false; }
+  if(!d.agreed){ toast('يجب الموافقة على الإقرار'); return false; }
+  if(!d.signed){ toast('من فضلك وقّع داخل المربع'); return false; }
+  return true;
+}
+
+/* ===================== حفظ ===================== */
+async function saveForm(){
+  const d = collect();
+  if(!validate(d)) return;
+  records.unshift(d);
+  await persist();
+  toast('✓ تم حفظ النموذج بنجاح');
+  resetForm();
+  renderAdmin();
+}
+
+function resetForm(){
+  ['custName','custPhone','custAddr','vType','vModel','vPlate','vVin','vOdo','complaint','bodyNotes']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('vFuel').value=50; document.getElementById('fuelVal').textContent='50%';
+  document.getElementById('agree').checked=false;
+  selectedChips.clear();
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  clearSig();
+  newSerial();
+}
+
+/* ===================== واتساب ===================== */
+function sendWhats(){
+  const d = collect();
+  if(!d.custName || !d.vPlate){ toast('أدخل الاسم ورقم اللوحة على الأقل'); return; }
+  const lines = [
+    '*نموذج استلام مركبة*',
+    'مركز صيانة سيارات الألمانية',
+    '──────────',
+    `رقم: ${d.serial}`,
+    `التاريخ: ${d.date}`,
+    '',
+    `*العميل:* ${d.custName}`,
+    `الهاتف: ${d.custPhone}`,
+    d.custAddr ? `العنوان: ${d.custAddr}` : '',
+    '',
+    `*المركبة:* ${d.vType} ${d.vModel}`,
+    `اللوحة: ${d.vPlate}`,
+    d.vVin ? `الهيكل: ${d.vVin}` : '',
+    d.vOdo ? `العداد: ${d.vOdo} km` : '',
+    `الوقود: ${d.vFuel}`,
+    '',
+    d.complaint ? `*الشكوى:* ${d.complaint}` : '',
+    d.bodyChips.length ? `*الفحص البصري:* ${d.bodyChips.join('، ')}` : '',
+    d.bodyNotes ? `ملاحظات: ${d.bodyNotes}` : '',
+    '',
+    d.agreed ? '✓ تم الموافقة على الإقرار' : '',
+    d.signed ? '✓ تم التوقيع' : ''
+  ].filter(Boolean).join('\n');
+  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(lines)}`;
+  window.open(url,'_blank');
+}
+
+/* ===================== Serial ===================== */
+function newSerial(){
+  const s = genSerial();
+  document.getElementById('serialDisp').textContent = s;
+  document.getElementById('dateDisp').textContent = nowStamp();
+}
+
+/* ===================== Admin ===================== */
+function showView(v){
+  document.getElementById('view-form').classList.toggle('hidden', v!=='form');
+  document.getElementById('view-admin').classList.toggle('hidden', v!=='admin');
+  document.getElementById('navForm').classList.toggle('active', v==='form');
+  document.getElementById('navAdmin').classList.toggle('active', v==='admin');
+  if(v==='admin') renderAdmin();
+}
+
+function renderAdmin(){
+  const q = (document.getElementById('searchBox').value||'').toLowerCase();
+  const list = document.getElementById('recList');
+  const today = new Date().toDateString();
+  document.getElementById('stTotal').textContent = records.length;
+  document.getElementById('stToday').textContent = records.filter(r=>new Date(r.ts).toDateString()===today).length;
+  document.getElementById('stSigned').textContent = records.filter(r=>r.signed).length;
+
+  const filtered = records.filter(r=>{
+    if(!q) return true;
+    return [r.custName,r.vPlate,r.custPhone,r.vType].join(' ').toLowerCase().includes(q);
+  });
+
+  if(!filtered.length){ list.innerHTML='<div class="empty">لا توجد نماذج محفوظة بعد.</div>'; return; }
+
+  list.innerHTML = filtered.map((r,i)=>`
+    <div class="rec">
+      <div class="info">
+        <b>${esc(r.custName)}</b>
+        <span class="tag">${esc(r.vPlate)}</span>
+        ${r.signed?'<span class="tag" style="color:var(--ok);border-color:#bfe3c8">موقّع</span>':''}
+        <small>${esc(r.vType)} ${esc(r.vModel)} · ${esc(r.custPhone)} · ${r.date}</small>
+      </div>
+      <div class="ops">
+        <button onclick="printRec(${records.indexOf(r)})">طباعة</button>
+        <button onclick="waRec(${records.indexOf(r)})">واتساب</button>
+        <button class="del" onclick="delRec(${records.indexOf(r)})">حذف</button>
+      </div>
+    </div>`).join('');
+}
+const esc = s => (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function delRec(i){
+  if(!confirm('حذف هذا النموذج نهائياً؟')) return;
+  records.splice(i,1); await persist(); renderAdmin(); toast('تم الحذف');
+}
+
+function waRec(i){
+  const d = records[i];
+  const lines = [
+    '*نموذج استلام مركبة*','مركز صيانة سيارات الألمانية','──────────',
+    `رقم: ${d.serial}`,`التاريخ: ${d.date}`,'',
+    `*العميل:* ${d.custName}`,`الهاتف: ${d.custPhone}`,'',
+    `*المركبة:* ${d.vType} ${d.vModel}`,`اللوحة: ${d.vPlate}`,
+    d.vOdo?`العداد: ${d.vOdo} km`:'',`الوقود: ${d.vFuel}`,'',
+    d.complaint?`*الشكوى:* ${d.complaint}`:'',
+    d.bodyChips&&d.bodyChips.length?`*الفحص:* ${d.bodyChips.join('، ')}`:'',
+    d.bodyNotes?`ملاحظات: ${d.bodyNotes}`:''
+  ].filter(Boolean).join('\n');
+  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(lines)}`,'_blank');
+}
+
+function printRec(i){
+  const d = records[i];
+  const w = window.open('','_blank');
+  w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><title>${d.serial}</title>
+  <style>body{font-family:'Cairo',sans-serif;padding:30px;color:#1a1c1f}
+  h1{color:#b91c1c;border-bottom:3px solid #b91c1c;padding-bottom:8px;font-size:20px}
+  .row{display:flex;border-bottom:1px solid #eee;padding:8px 0}.row b{width:160px;color:#555}
+  .sec{margin-top:18px;font-weight:800;color:#7f1313}
+  img{max-width:240px;border:1px solid #ccc;border-radius:6px;margin-top:8px}
+  .head small{color:#777}</style></head><body>
+  <div class="head"><h1>نموذج استلام مركبة</h1><small>مركز صيانة سيارات الألمانية · ${d.serial} · ${d.date}</small></div>
+  <div class="sec">بيانات العميل</div>
+  <div class="row"><b>الاسم</b><span>${esc(d.custName)}</span></div>
+  <div class="row"><b>الهاتف</b><span>${esc(d.custPhone)}</span></div>
+  <div class="row"><b>العنوان</b><span>${esc(d.custAddr)||'—'}</span></div>
+  <div class="sec">بيانات المركبة</div>
+  <div class="row"><b>النوع</b><span>${esc(d.vType)} ${esc(d.vModel)}</span></div>
+  <div class="row"><b>اللوحة</b><span>${esc(d.vPlate)}</span></div>
+  <div class="row"><b>الهيكل VIN</b><span>${esc(d.vVin)||'—'}</span></div>
+  <div class="row"><b>العداد</b><span>${esc(d.vOdo)||'—'} km</span></div>
+  <div class="row"><b>الوقود</b><span>${d.vFuel}</span></div>
+  <div class="sec">الشكوى والفحص</div>
+  <div class="row"><b>الشكوى</b><span>${esc(d.complaint)||'—'}</span></div>
+  <div class="row"><b>الفحص البصري</b><span>${(d.bodyChips||[]).map(esc).join('، ')||'—'}</span></div>
+  <div class="row"><b>ملاحظات</b><span>${esc(d.bodyNotes)||'—'}</span></div>
+  <div class="sec">الإقرار والتوقيع</div>
+  <div class="row"><b>الموافقة</b><span>${d.agreed?'✓ موافق':'—'}</span></div>
+  ${d.signature?`<div><b>توقيع العميل:</b><br><img src="${d.signature}"></div>`:''}
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),350);
+}
+
+/* ===================== QR ===================== */
+function initQR(){
+  const url = encodeURIComponent(CONFIG.formUrl);
+  document.getElementById('qrImg').src =
+    `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${url}`;
+}
+
+/* ===================== Init ===================== */
+(async function(){
+  await loadRecords();
+  initSig(); initChips(); newSerial(); initQR();
+  window.addEventListener('resize',()=>{ /* keep canvas crisp */ });
+})();
+</script>
